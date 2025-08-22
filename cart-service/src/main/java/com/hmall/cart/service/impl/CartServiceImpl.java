@@ -65,6 +65,8 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
         cart.setUserId(userId);
         // 3.3.保存到数据库
         save(cart);
+        //saveOrUpdate(cart);
+
     }
 
     @Override
