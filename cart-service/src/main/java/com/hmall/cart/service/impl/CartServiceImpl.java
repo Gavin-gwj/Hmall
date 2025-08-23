@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmall.api.client.ItemClient;
 import com.hmall.api.dto.ItemDTO;
 
+import com.hmall.cart.config.CartProperties;
 import com.hmall.cart.domain.dto.CartFormDTO;
 import com.hmall.cart.domain.po.Cart;
 import com.hmall.cart.domain.vo.CartVO;
@@ -17,6 +18,7 @@ import com.hmall.common.utils.CollUtils;
 import com.hmall.common.utils.UserContext;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
  * @since 2023-05-05
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements ICartService {
 
@@ -43,31 +46,48 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
     private final DiscoveryClient discoveryClient;*/
     private final ItemClient itemClient;
 
+    private final CartProperties cartProperties;
+
 
     @Override
     public void addItem2Cart(CartFormDTO cartFormDTO) {
+        log.info("开始添加商品到购物车: {}", cartFormDTO);
+
         // 1.获取登录用户
         Long userId = UserContext.getUser();
+        log.info("当前用户ID: {}", userId);
 
         // 2.判断是否已经存在
-        if(checkItemExists(cartFormDTO.getItemId(), userId)){
+        boolean exists = checkItemExists(cartFormDTO.getItemId(), userId);
+        log.info("商品是否存在: {}, 商品ID: {}", exists, cartFormDTO.getItemId());
+
+        if(exists){
             // 2.1.存在，则更新数量
+            log.info("更新购物车商品数量");
             baseMapper.updateNum(cartFormDTO.getItemId(), userId);
+            log.info("商品数量更新完成");
             return;
         }
+
         // 2.2.不存在，判断是否超过购物车数量
+        log.info("检查购物车是否已满");
         checkCartsFull(userId);
 
         // 3.新增购物车条目
         // 3.1.转换PO
         Cart cart = BeanUtils.copyBean(cartFormDTO, Cart.class);
+        log.info("转换后的购物车对象: {}", cart);
+
         // 3.2.保存当前用户
         cart.setUserId(userId);
-        // 3.3.保存到数据库
-        save(cart);
-        //saveOrUpdate(cart);
+        log.info("设置用户ID后: {}", cart);
 
+        // 3.3.保存到数据库
+        log.info("保存购物车条目");
+        boolean result = save(cart);
+        log.info("保存结果: {}", result);
     }
+
 
     @Override
     public List<CartVO> queryMyCarts() {
@@ -146,8 +166,9 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
 
     private void checkCartsFull(Long userId) {
         int count = lambdaQuery().eq(Cart::getUserId, userId).count();
-        if (count >= 10) {
-            throw new BizIllegalException(StrUtil.format("用户购物车课程不能超过{}", 10));
+        if (count >= cartProperties.getMaxAmount()) {
+            throw new BizIllegalException(
+                    StrUtil.format("用户购物车课程不能超过{}", cartProperties.getMaxAmount()));
         }
     }
 
