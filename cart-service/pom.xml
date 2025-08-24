@@ -83,6 +83,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!--sentinel 核心库（保安队员）-->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+        </dependency>
+
+
 
 
 
