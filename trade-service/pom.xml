@@ -51,6 +51,22 @@
             <artifactId>hm-api</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <!-- 1. Nacos统一配置管理：用于加载共享的Seata配置 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+        <!-- 2. 读取bootstrap.yaml配置文件（优先级高于application.yaml） -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+        <!-- 3. Seata客户端：集成TM和RM功能 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-seata</artifactId>
+        </dependency>
+
 
 
 

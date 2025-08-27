@@ -1,10 +1,16 @@
 server:
   port: 8082
-
+  tomcat:
+    threads:
+      max: 50
+    accept-count: 50
+    maxconnections: 100
 
 feign:
   okhttp:
     enabled: true # 开启OKHttp功能
+  sentinel:
+    enabled: true
 hm:
   db:
     database: hm-cart
